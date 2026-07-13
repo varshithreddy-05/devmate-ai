@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { ArrowLeft, Play, Loader2, ArrowRight, Copy, Check } from "lucide-react";
+import { Play, Loader2, ArrowRight, Copy, Check } from "lucide-react";
 import { CodeEditor } from "@/components/CodeEditor";
+import { LanguageSelect } from "@/components/LanguageSelect";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   detectLanguage,
@@ -26,15 +26,15 @@ interface ConvertResult {
   notes: Note[];
 }
 
-const EXAMPLE = `def fib(n):
-    a, b = 0, 1
-    for _ in range(n):
-        a, b = b, a + b
-    return a`;
-
 export default function CodeConvertPage() {
-  const [code, setCode] = useState(EXAMPLE);
-  const [sourceLang, setSourceLang] = useState<DetectedLanguage>(detectLanguage(EXAMPLE));
+  // Source code + detected language live in the shared store (not local
+  // useState) so they survive switching to another tool page and back.
+  // targetLang stays local — it's a per-visit choice, not "the code".
+  const code = useAppStore((s) => s.currentCode);
+  const setCode = useAppStore((s) => s.setCurrentCode);
+  const sourceLang = useAppStore((s) => s.currentLanguage);
+  const setSourceLang = useAppStore((s) => s.setCurrentLanguage);
+
   const [overrideLang, setOverrideLang] = useState(false);
   const [targetLang, setTargetLang] = useState<DetectedLanguage>("javascript");
   const [loading, setLoading] = useState(false);
@@ -107,109 +107,100 @@ export default function CodeConvertPage() {
   }
 
   return (
-    <main className="min-h-screen">
-      <nav className="sticky top-0 z-30 border-b border-border bg-bg/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link href="/" className="focus-ring flex items-center gap-2 text-sm text-ink-muted hover:text-ink">
-            <ArrowLeft size={16} /> Back
-          </Link>
-          <h1 className="font-display text-xl">AI Code Converter</h1>
-          <ThemeToggle />
-        </div>
-      </nav>
-
-      <div className="mx-auto max-w-7xl px-6 py-8">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="rounded-md bg-bg-surface px-2.5 py-1 font-mono text-xs text-ink-muted">
-              {overrideLang ? "manual" : "auto"}: {sourceLang}
-            </span>
-            <select
-              value={sourceLang}
-              onChange={(e) => {
-                setOverrideLang(true);
-                setSourceLang(e.target.value as DetectedLanguage);
+    <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-sm">
+            <LanguageSelect
+              value={overrideLang ? sourceLang : "auto"}
+              onChange={(v) => {
+                if (v === "auto") {
+                  setOverrideLang(false);
+                  setSourceLang(detectLanguage(code));
+                } else {
+                  setOverrideLang(true);
+                  setSourceLang(v as DetectedLanguage);
+                }
               }}
-              className="focus-ring rounded-md border border-border bg-bg-surface px-2 py-1 text-xs text-ink"
-            >
-              {SUPPORTED_LANGUAGES.map((l) => (
-                <option key={l} value={l}>{l}</option>
-              ))}
-            </select>
+              options={[
+                { value: "auto", label: "Auto Detect" },
+                ...SUPPORTED_LANGUAGES.map((l) => ({ value: l, label: l })),
+              ]}
+            />
             <ArrowRight size={14} className="text-ink-faint" />
-            <select
+            <LanguageSelect
               value={targetLang}
-              onChange={(e) => setTargetLang(e.target.value as DetectedLanguage)}
-              className="focus-ring rounded-md border border-accent/40 bg-accent-dim px-2 py-1 text-xs font-medium text-accent"
-            >
-              {SUPPORTED_LANGUAGES.map((l) => (
-                <option key={l} value={l}>{l}</option>
-              ))}
-            </select>
+              onChange={(v) => setTargetLang(v as DetectedLanguage)}
+              options={SUPPORTED_LANGUAGES.map((l) => ({ value: l, label: l }))}
+              variant="accent"
+            />
           </div>
-          <button
-            onClick={runConvert}
-            disabled={loading}
-            className="focus-ring flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-60"
-          >
-            {loading ? <Loader2 size={15} className="animate-spin" /> : <Play size={15} />}
-            {loading ? "Converting..." : "Convert"}
-          </button>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <p className="text-xs font-medium uppercase tracking-wide text-ink-faint">Source · {sourceLang}</p>
-            <CodeEditor value={code} onChange={handleCodeChange} language={MONACO_LANG_MAP[sourceLang]} />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-medium uppercase tracking-wide text-ink-faint">Result · {targetLang}</p>
-              {result && (
-                <button
-                  onClick={copyResult}
-                  className="focus-ring flex items-center gap-1.5 rounded-md border border-border bg-bg-surface px-2 py-1 text-xs text-ink-muted hover:text-ink"
-                >
-                  {copied ? <Check size={12} className="text-mint" /> : <Copy size={12} />}
-                  {copied ? "Copied" : "Copy"}
-                </button>
-              )}
-            </div>
-
-            {!result && !loading && (
-              <div className="flex h-[480px] flex-col items-center justify-center rounded-xl border border-dashed border-border p-10 text-center">
-                <p className="text-sm text-ink-muted">Converted code will appear here.</p>
-              </div>
-            )}
-            {loading && (
-              <div className="flex h-[480px] items-center justify-center rounded-xl border border-border bg-bg-surface">
-                <Loader2 size={20} className="animate-spin text-ink-faint" />
-              </div>
-            )}
-            {result && (
-              <CodeEditor
-                value={result.convertedCode}
-                onChange={() => {}}
-                language={MONACO_LANG_MAP[targetLang]}
-                readOnly
-              />
-            )}
-          </div>
-        </div>
-
-        {result && result.notes.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-6 space-y-2.5">
-            <p className="text-xs font-medium uppercase tracking-wide text-ink-faint">Translation notes</p>
-            {result.notes.map((n, i) => (
-              <div key={i} className="rounded-xl border border-border bg-bg-surface p-4">
-                <p className="mb-1 text-sm font-medium text-ink">{n.title}</p>
-                <p className="text-sm text-ink-muted">{n.explanation}</p>
-              </div>
-            ))}
-          </motion.div>
-        )}
+        <button
+          onClick={runConvert}
+          disabled={loading}
+          className="focus-ring flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-60"
+        >
+          {loading ? <Loader2 size={15} className="animate-spin" /> : <Play size={15} />}
+          {loading ? "Converting..." : "Convert"}
+        </button>
       </div>
-    </main>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="flex flex-col gap-2">
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-faint">Source · {sourceLang}</p>
+          <CodeEditor
+            value={code}
+            onChange={handleCodeChange}
+            language={MONACO_LANG_MAP[sourceLang]}
+            placeholder="Paste the code you want to convert..."
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-medium uppercase tracking-wide text-ink-faint">Result · {targetLang}</p>
+            {result && (
+              <button
+                onClick={copyResult}
+                className="focus-ring flex items-center gap-1.5 rounded-md border border-border bg-bg-surface px-2 py-1 text-xs text-ink-muted hover:text-ink"
+              >
+                {copied ? <Check size={12} className="text-mint" /> : <Copy size={12} />}
+                {copied ? "Copied" : `Copy ${targetLang} code`}
+              </button>
+            )}
+          </div>
+
+          {!result && !loading && (
+            <div className="flex h-[480px] flex-col items-center justify-center rounded-xl border border-dashed border-border p-10 text-center">
+              <p className="text-sm text-ink-muted">Converted code will appear here.</p>
+            </div>
+          )}
+          {loading && (
+            <div className="flex h-[480px] items-center justify-center rounded-xl border border-border bg-bg-surface">
+              <Loader2 size={20} className="animate-spin text-ink-faint" />
+            </div>
+          )}
+          {result && (
+            <CodeEditor
+              value={result.convertedCode}
+              onChange={() => {}}
+              language={MONACO_LANG_MAP[targetLang]}
+              readOnly
+            />
+          )}
+        </div>
+      </div>
+
+      {result && result.notes.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-6 space-y-2.5">
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-faint">Translation notes</p>
+          {result.notes.map((n, i) => (
+            <div key={i} className="rounded-xl border border-border bg-bg-surface p-4">
+              <p className="mb-1 text-sm font-medium text-ink">{n.title}</p>
+              <p className="text-sm text-ink-muted">{n.explanation}</p>
+            </div>
+          ))}
+        </motion.div>
+      )}
+    </div>
   );
 }

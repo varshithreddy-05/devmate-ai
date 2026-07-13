@@ -6,6 +6,44 @@
   --font-display: "Instrument Serif", Georgia, serif;
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Dark theme (default) — RGB channels, no # or commas, so Tailwind can
+     apply opacity modifiers like bg-mint-dim/20 via rgb(var(--x) / <alpha>) */
+  --color-bg: 10 10 12;
+  --color-bg-surface: 17 17 20;
+  --color-bg-raised: 24 24 28;
+  --color-border: 35 35 39;
+  --color-ink: 237 237 240;
+  --color-ink-muted: 139 139 148;
+  --color-ink-faint: 87 87 95;
+  --color-accent: 108 92 231;
+  --color-accent-hover: 124 109 250;
+  --color-accent-dim: 42 35 84;
+  --color-mint: 52 209 154;
+  --color-mint-dim: 18 53 39;
+  --color-danger: 255 93 93;
+  --color-danger-dim: 58 26 26;
+  --color-amber: 245 166 35;
+  --color-amber-dim: 58 42 15;
+}
+
+html.light {
+  --color-bg: 250 250 249;
+  --color-bg-surface: 241 240 237;
+  --color-bg-raised: 255 255 255;
+  --color-border: 228 226 221;
+  --color-ink: 22 22 20;
+  --color-ink-muted: 107 106 99;
+  --color-ink-faint: 150 148 140;
+  --color-accent: 108 92 231;
+  --color-accent-hover: 124 109 250;
+  --color-accent-dim: 237 234 252;
+  --color-mint: 22 163 116;
+  --color-mint-dim: 224 247 238;
+  --color-danger: 220 38 38;
+  --color-danger-dim: 255 228 228;
+  --color-amber: 217 119 6;
+  --color-amber-dim: 255 240 214;
 }
 
 * {
@@ -23,9 +61,6 @@
 
 body {
   @apply bg-bg text-ink font-sans antialiased transition-colors duration-300;
-}
-html.light body {
-  @apply bg-bg-light text-ink-light;
 }
 
 ::selection {

@@ -1,5 +1,14 @@
 import type { Config } from "tailwindcss";
 
+function withOpacity(variable: string) {
+  return ({ opacityValue }: { opacityValue?: string }) => {
+    if (opacityValue !== undefined) {
+      return `rgb(var(${variable}) / ${opacityValue})`;
+    }
+    return `rgb(var(${variable}))`;
+  };
+}
+
 const config: Config = {
   darkMode: "class",
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
@@ -7,40 +16,34 @@ const config: Config = {
     extend: {
       colors: {
         bg: {
-          DEFAULT: "#0A0A0C",
-          surface: "#111114",
-          raised: "#18181C",
-          light: "#FAFAF9",
-          "light-surface": "#F1F0ED",
-          "light-raised": "#FFFFFF",
+          DEFAULT: withOpacity("--color-bg"),
+          surface: withOpacity("--color-bg-surface"),
+          raised: withOpacity("--color-bg-raised"),
         },
         border: {
-          DEFAULT: "#232327",
-          light: "#E4E2DD",
+          DEFAULT: withOpacity("--color-border"),
         },
         ink: {
-          DEFAULT: "#EDEDF0",
-          muted: "#8B8B94",
-          faint: "#57575F",
-          light: "#161614",
-          "light-muted": "#6B6A63",
+          DEFAULT: withOpacity("--color-ink"),
+          muted: withOpacity("--color-ink-muted"),
+          faint: withOpacity("--color-ink-faint"),
         },
         accent: {
-          DEFAULT: "#6C5CE7",
-          hover: "#7C6DFA",
-          dim: "#2A2354",
+          DEFAULT: withOpacity("--color-accent"),
+          hover: withOpacity("--color-accent-hover"),
+          dim: withOpacity("--color-accent-dim"),
         },
         mint: {
-          DEFAULT: "#34D19A",
-          dim: "#123527",
+          DEFAULT: withOpacity("--color-mint"),
+          dim: withOpacity("--color-mint-dim"),
         },
         danger: {
-          DEFAULT: "#FF5D5D",
-          dim: "#3A1A1A",
+          DEFAULT: withOpacity("--color-danger"),
+          dim: withOpacity("--color-danger-dim"),
         },
         amber: {
-          DEFAULT: "#F5A623",
-          dim: "#3A2A0F",
+          DEFAULT: withOpacity("--color-amber"),
+          dim: withOpacity("--color-amber-dim"),
         },
       },
       fontFamily: {
