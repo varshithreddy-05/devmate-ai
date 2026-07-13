@@ -1,0 +1,36 @@
+// Prisma schema — Postgres (Neon / Supabase compatible)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  name      String?
+  image     String?
+  createdAt DateTime   @default(now())
+  analyses  Analysis[]
+}
+
+// One row per AI tool run (code review, optimize, convert, concept-detect...)
+model Analysis {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  tool        String // "code-review" | "code-optimize" | "code-convert" | "concept-detector"
+  language    String
+  targetLang  String? // only set for code-convert
+  inputCode   String   @db.Text
+  resultJson  String   @db.Text // raw AI JSON response, parsed client-side
+  pinned      Boolean  @default(false)
+  favorite    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
