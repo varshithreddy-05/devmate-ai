@@ -104,7 +104,7 @@ export function CodeEditor({
   return (
     <div className="relative overflow-hidden rounded-xl border border-border">
       {placeholder && !value && (
-        <div className="pointer-events-none absolute left-[60px] top-[17px] z-10 select-none whitespace-pre-line font-mono text-[13px] leading-[19px] text-ink-faint">
+        <div className="pointer-events-none absolute left-[65px] top-[16px] right-4 z-10 select-none whitespace-pre-line font-mono text-[13px] leading-[19px] text-ink-faint">
           {placeholder}
         </div>
       )}
