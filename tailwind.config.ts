@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss";
 
-function withOpacity(variable: string) {
+function withOpacity(variable: string): any {
   return ({ opacityValue }: { opacityValue?: string }) => {
     if (opacityValue !== undefined) {
       return `rgb(var(${variable}) / ${opacityValue})`;
