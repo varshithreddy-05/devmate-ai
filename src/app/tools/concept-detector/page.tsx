@@ -45,8 +45,10 @@ const CATEGORY_STYLE: Record<string, string> = {
 };
 
 export default function ConceptDetectorPage() {
-  const [code, setCode] = useState("");
-  const [language, setLanguage] = useState<DetectedLanguage>("unknown");
+  const code = useAppStore((s) => s.currentCode);
+  const setCode = useAppStore((s) => s.setCurrentCode);
+  const language = useAppStore((s) => s.currentLanguage);
+  const setLanguage = useAppStore((s) => s.setCurrentLanguage);
   const [overrideLang, setOverrideLang] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ConceptResult | null>(null);

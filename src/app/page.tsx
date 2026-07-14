@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
 import {
   FileCode2,
   Gauge,
@@ -14,13 +15,21 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { CommandPalette } from "@/components/CommandPalette";
 import { DiffHero } from "@/components/DiffHero";
 
-const TOOLS = [
+type Tool = {
+  href: string;
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+  status: "live" | "scaffold";
+};
+
+const TOOLS: Tool[] = [
   {
     href: "/tools/code-review",
     icon: FileCode2,
     title: "AI Code Review",
     desc: "Bugs, vulnerabilities, bad practices, and code smells — each with severity and a corrected version.",
-    status: "live" as const,
+    status: "live",
   },
   {
     href: "/tools/code-optimize",

@@ -22,13 +22,13 @@ export type DetectedLanguage =
 // Order matters — more specific / less ambiguous signals are checked first.
 const RULES: Array<{ lang: DetectedLanguage; test: RegExp }> = [
   { lang: "html", test: /<\/?(html|div|span|body|head)[\s>]/i },
-  { lang: "css", test: /^[^{]*\{[^}]*:[^;]+;[^}]*\}/m },
-  { lang: "python", test: /^\s*(def |import |from .+ import |class .+:|print\()/m },
+  { lang: "css", test: /^[ \t]*[a-zA-Z-]+\s*:\s*[^;{}:\n]+;[ \t]*$/m },
+  { lang: "python", test: /^\s*(def\s|from\s+\S+\s+import\s|import\s+[^\n;]+$|class\s+\w+(\(.*\))?\s*:\s*$|print\()/m },
   { lang: "rust", test: /\bfn\s+\w+\s*\(|let mut |->\s*\w+\s*\{|::<|impl\s+\w+/ },
   { lang: "go", test: /\bfunc\s+\w+\s*\(|package main|:=|\bfmt\.(Println|Printf)/ },
   { lang: "kotlin", test: /\bfun\s+\w+\s*\(|val\s+\w+\s*[:=]|\bcompanion object\b/ },
   { lang: "swift", test: /\bfunc\s+\w+\(.*\)\s*->|\bvar\s+\w+:\s*\w+|import UIKit|import SwiftUI/ },
-  { lang: "csharp", test: /\busing System;|namespace\s+\w+|public\s+(class|static)\s+\w+.*\{/ },
+  { lang: "csharp", test: /\busing System;|namespace\s+\w+|Console\.(WriteLine|Write)\(/ },
   { lang: "php", test: /^<\?php|\$[a-zA-Z_]\w*\s*=/m },
   { lang: "ruby", test: /\bdef\s+\w+.*\n(.|\n)*?\bend\b|\bputs\s|\battr_accessor\b/ },
   { lang: "sql", test: /\b(SELECT|INSERT INTO|CREATE TABLE|UPDATE .+ SET)\b/i },

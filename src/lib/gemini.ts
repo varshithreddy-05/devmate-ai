@@ -24,7 +24,11 @@ export async function* streamGemini(prompt: string, systemInstruction: string) {
     body: JSON.stringify({
       model: MODEL_NAME,
       stream: true,
-      temperature: 0.2,
+      // Lowered from 0.2 — for structured analysis tasks (review/optimize/
+      // convert/concepts) determinism matters more than variety, and a lower
+      // temperature measurably cuts down on the model inventing extra,
+      // low-confidence "issues" just to fill out the response.
+      temperature: 0,
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: systemInstruction },
